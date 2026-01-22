@@ -14,45 +14,41 @@ def get_clients():
     }
 
 def run_llm(provider: str, model_name: str, messages, max_tokens: int = 500) -> str:
-    try:
-        clients = get_clients()
-        client = clients[provider]
+    clients = get_clients()
+    client = clients[provider]
 
-        if provider == "Google":
-            # Separate system instruction from user content for GenAI API
-            # Memory Injector: Only the first system message is used & only the last user message is used
-            system_text = next((m["content"] for m in messages if m["role"] == "system"), "") 
-            user_text = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
+    if provider == "Google":
+        # Separate system instruction from user content for GenAI API
+        # Memory Injector: Only the first system message is used & only the last user message is used
+        system_text = next((m["content"] for m in messages if m["role"] == "system"), "") 
+        user_text = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
 
-            resp = client.models.generate_content(
-                model=model_name,
-                contents=[user_text],
-                config=genai_types.GenerateContentConfig(
-                    system_instruction=system_text or "You are a helpful assistant."
-                ),
-            )
-            return resp.text or ""
-
-        if provider == "OpenAI":
-            # Use Responses API for gpt-5-*
-            resp = client.responses.create(
-                model=model_name,
-                input=messages, # Message history
-                max_output_tokens=max_tokens,
-                reasoning={"effort": "minimal"},
-            )
-            return resp.output_text or ""
-
-        # Groq (OpenAI-compatible chat API)
-        resp = client.chat.completions.create(
+        resp = client.models.generate_content(
             model=model_name,
-            messages=messages, # Message history
-            max_tokens=max_tokens,
+            contents=[user_text],
+            config=genai_types.GenerateContentConfig(
+                system_instruction=system_text or "You are a helpful assistant."
+            ),
         )
-        return resp.choices[0].message.content or ""
-    except Exception as e:
-        st.error(f"Error: {e}")
-        return f"Error encountered: {e}"
+        return resp.text or ""
+
+    if provider == "OpenAI":
+        # Use Responses API for gpt-5-*
+        resp = client.responses.create(
+            model=model_name,
+            input=messages, # Message history
+            max_output_tokens=max_tokens,
+            reasoning={"effort": "minimal"},
+        )
+        return resp.output_text or "" #     
+
+    # Groq (OpenAI-compatible chat API)
+    resp = client.chat.completions.create(
+        model=model_name,
+        messages=messages, # Message history
+        max_tokens=max_tokens,
+    )
+    return resp.choices[0].message.content or ""
 
 
 # Sidebar
