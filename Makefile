@@ -1,3 +1,3 @@
 run-docker-compose:
 	uv sync
-	docker-compose up --build
+	docker compose up --build

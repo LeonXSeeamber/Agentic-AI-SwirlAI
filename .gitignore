@@ -205,3 +205,16 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Ignore the data folder (keep datasets local)
+data/
+
+# Ignore VS Code editor settings
+.vscode/
+
+# Ignore Jupyter Notebook checkpoints (if you use notebooks)
+.ipynb_checkpoints/
+
+# Ignore Python cache files (standard practice)
+__pycache__/
+*.pyc

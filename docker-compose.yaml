@@ -1,4 +1,5 @@
 services:
+# Streamlit UI service - Frontend interface for users to interact with the RAG-augmented product Q&A system
   streamlit-app:
     build:
       context: .
@@ -12,7 +13,8 @@ services:
       - ./apps/chatbot_ui/src:/app/apps/chatbot_ui/src # Mount the Chatbot UI source code from src for development,
       # This allows live code changes in src without rebuilding the image 
 
-  api:
+# FastAPI service - RAG-augmented product Q&A API, which the Streamlit UI will call to get responses to user queries - 
+#                   Connecting the backend logic from our api app python code
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -24,3 +26,17 @@ services:
     volumes: 
       - ./apps/api/src:/app/apps/api/src # Mount the API source code from src for development, 
       # This allows live code changes in src without rebuilding the image
+
+
+
+# Qdrant vector database service - we will use this to store our product embeddings and metadata for retrieval during RAG
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - 6333:6333 # HTTP port - for REST API communication, acc
+      - 6334:6334 # gRPC port - for communication with Qdrant clients
+    restart: unless-stopped
+    volumes:
+      - qdrant_storage:/qdrant/storage # This volumes allows us to persist the Qdrant data (embeddings and metadata) across container restarts, ensuring our vector database is not lost when the container is stopped or restarted.
+                                       # Essentially, it maps the /qdrant/storage directory inside the container (where Qdrant stores its data) to a named volume called qdrant_storage on the host machine.
+  qdrant_storage:
